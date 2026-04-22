@@ -229,6 +229,7 @@ and velocities from a reference trajectory.
 | Task ID | Robot | Controlled Joints | Commands | Observations |
 |---------|-------|-------------------|----------|--------------|
 | `Tracking-Flat-G1-v0` | Unitree G1 | Full body (29 joints) | Motion tracking | Single frame (no history) |
+| `Tracking-Flat-G1-RefParity-v0` | Unitree G1 | Full body (29 joints) | Motion tracking | Reference-parity single frame |
 
 **Key features**:
 
@@ -236,6 +237,9 @@ and velocities from a reference trajectory.
 - **No recurrence or history**: Pure reactive MLP policy operating on a single frame.
 - **BeyondMimic actuator model**: Uses system-identified motor parameters with no actuator delay.
 - **Anchor-relative tracking**: Rewards track body poses relative to a torso anchor, plus global anchor position and orientation.
+- **No-USD reference-parity variant**: `Tracking-Flat-G1-RefParity-v0` uses a URDF/capsule-friendly
+  G1 asset and a reduced reference-style event/reward surface for fairer comparison against open
+  whole-body-tracking setups. See {doc}`no-usd-tracking`.
 
 ```{note}
 Due to licensing constraints, we do not include the pre-trained tracking checkpoint or the
