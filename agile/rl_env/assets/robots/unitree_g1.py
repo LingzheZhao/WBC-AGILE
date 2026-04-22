@@ -14,6 +14,8 @@
 # limitations under the License.
 
 
+import os
+
 import isaaclab.sim as sim_utils
 from isaaclab.actuators import ImplicitActuatorCfg
 from isaaclab.assets import ArticulationCfg
@@ -606,6 +608,35 @@ for _actuator_cfg in G1_29DOF_BeyondMimic.actuators.values():
     for _n in _names:
         if _n in _e and _n in _s and _s[_n]:
             G1_29DOF_ACTION_SCALE[_n] = 0.25 * _e[_n] / _s[_n]
+
+
+G1_NO_USD_URDF_PATH = os.getenv("G1_NO_USD_URDF_PATH", "")
+
+G1_29DOF_NO_USD = G1_29DOF_BeyondMimic.replace(
+    spawn=sim_utils.UrdfFileCfg(
+        fix_base=False,
+        replace_cylinders_with_capsules=True,
+        asset_path=G1_NO_USD_URDF_PATH,
+        activate_contact_sensors=True,
+        rigid_props=sim_utils.RigidBodyPropertiesCfg(
+            disable_gravity=False,
+            retain_accelerations=False,
+            linear_damping=0.0,
+            angular_damping=0.0,
+            max_linear_velocity=1000.0,
+            max_angular_velocity=1000.0,
+            max_depenetration_velocity=1.0,
+        ),
+        articulation_props=sim_utils.ArticulationRootPropertiesCfg(
+            enabled_self_collisions=True,
+            solver_position_iteration_count=8,
+            solver_velocity_iteration_count=4,
+        ),
+        joint_drive=sim_utils.UrdfConverterCfg.JointDriveCfg(
+            gains=sim_utils.UrdfConverterCfg.JointDriveCfg.PDGainsCfg(stiffness=0, damping=0)
+        ),
+    )
+)
 
 
 # =============================================================================

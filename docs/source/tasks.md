@@ -229,6 +229,7 @@ and velocities from a reference trajectory.
 | Task ID | Robot | Controlled Joints | Commands | Observations |
 |---------|-------|-------------------|----------|--------------|
 | `Tracking-Flat-G1-v0` | Unitree G1 | Full body (29 joints) | Motion tracking | Single frame (no history) |
+| `Tracking-Flat-G1-NoUSD-v0` | Unitree G1 | Full body (29 joints) | Motion tracking | Same as `Tracking-Flat-G1-v0` |
 
 **Key features**:
 
@@ -236,6 +237,14 @@ and velocities from a reference trajectory.
 - **No recurrence or history**: Pure reactive MLP policy operating on a single frame.
 - **BeyondMimic actuator model**: Uses system-identified motor parameters with no actuator delay.
 - **Anchor-relative tracking**: Rewards track body poses relative to a torso anchor, plus global anchor position and orientation.
+- **No-USD asset variant**: `Tracking-Flat-G1-NoUSD-v0` keeps the same task and PPO surface as
+  `Tracking-Flat-G1-v0`, but swaps the robot spawn from the USD asset to a URDF asset with
+  `replace_cylinders_with_capsules=True`. Set `G1_NO_USD_URDF_PATH` to the G1 URDF before use.
+
+```bash
+export G1_NO_USD_URDF_PATH=/path/to/unitree_description/urdf/g1/main.urdf
+python scripts/train.py --task Tracking-Flat-G1-NoUSD-v0 --num_envs 4096 --headless
+```
 
 ```{note}
 Due to licensing constraints, we do not include the pre-trained tracking checkpoint or the
