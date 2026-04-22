@@ -20,6 +20,7 @@
 # flake8: noqa
 
 import argparse
+import importlib
 
 from isaaclab.app import AppLauncher
 
@@ -173,7 +174,34 @@ from isaaclab.utils.dict import print_dict
 from isaaclab_tasks.utils import get_checkpoint_path, parse_env_cfg
 
 import agile.rl_env.tasks  # noqa: F401
-import agile.isaaclab_extras.monkey_patches
+
+
+def _apply_agile_monkey_patches() -> list[str]:
+    patch_modules = {
+        "contact_sensor_data": "agile.isaaclab_extras.monkey_patches.contact_sensor_data_patch",
+        "contact_sensor": "agile.isaaclab_extras.monkey_patches.contact_sensor_patch",
+        "manager_based_rl_env": "agile.isaaclab_extras.monkey_patches.manager_based_rl_env_patch",
+        "observation_manager": "agile.isaaclab_extras.monkey_patches.observation_manager_patch",
+    }
+    patch_spec = os.getenv("AGILE_MONKEY_PATCHES", "all").strip().lower()
+    if patch_spec in {"", "all", "1", "true", "on"}:
+        selected = list(patch_modules.keys())
+    elif patch_spec in {"0", "none", "false", "off"}:
+        selected = []
+    else:
+        selected = [item.strip() for item in patch_spec.split(",") if item.strip()]
+        unknown = sorted(set(selected) - set(patch_modules))
+        if unknown:
+            raise ValueError(
+                f"Unknown AGILE_MONKEY_PATCHES entries: {unknown}. Valid values: {sorted(patch_modules.keys())}"
+            )
+    for name in selected:
+        importlib.import_module(patch_modules[name])
+    print(f"[INFO] Applied agile monkey patches: {selected if selected else ['none']}")
+    return selected
+
+
+_apply_agile_monkey_patches()
 from rsl_rl.runners import OnPolicyRunner
 from agile.algorithms.evaluation.evaluator import PolicyEvaluator
 from agile.rl_env.rsl_rl import RslRlOnPolicyRunnerCfg, RslRlVecEnvWrapper

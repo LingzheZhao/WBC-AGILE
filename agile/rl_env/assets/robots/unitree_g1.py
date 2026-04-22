@@ -14,6 +14,8 @@
 # limitations under the License.
 
 
+import os
+
 import isaaclab.sim as sim_utils
 from isaaclab.actuators import ImplicitActuatorCfg
 from isaaclab.assets import ArticulationCfg
@@ -606,6 +608,67 @@ for _actuator_cfg in G1_29DOF_BeyondMimic.actuators.values():
     for _n in _names:
         if _n in _e and _n in _s and _s[_n]:
             G1_29DOF_ACTION_SCALE[_n] = 0.25 * _e[_n] / _s[_n]
+
+
+def _implicit_from_actuator(actuator_cfg) -> ImplicitActuatorCfg:
+    """Drop wrapper-specific delay fields while preserving motor constants."""
+    return ImplicitActuatorCfg(
+        joint_names_expr=actuator_cfg.joint_names_expr,
+        effort_limit_sim=actuator_cfg.effort_limit_sim,
+        velocity_limit_sim=actuator_cfg.velocity_limit_sim,
+        stiffness=actuator_cfg.stiffness,
+        damping=actuator_cfg.damping,
+        armature=actuator_cfg.armature,
+    )
+
+
+G1_REF_PARITY_URDF_PATH = os.getenv("G1_REF_PARITY_URDF_PATH", "")
+
+G1_REF_PARITY_CFG = G1_29DOF_BeyondMimic.replace(
+    spawn=sim_utils.UrdfFileCfg(
+        fix_base=False,
+        replace_cylinders_with_capsules=True,
+        asset_path=G1_REF_PARITY_URDF_PATH,
+        activate_contact_sensors=True,
+        rigid_props=sim_utils.RigidBodyPropertiesCfg(
+            disable_gravity=False,
+            retain_accelerations=False,
+            linear_damping=0.0,
+            angular_damping=0.0,
+            max_linear_velocity=1000.0,
+            max_angular_velocity=1000.0,
+            max_depenetration_velocity=1.0,
+        ),
+        articulation_props=sim_utils.ArticulationRootPropertiesCfg(
+            enabled_self_collisions=True,
+            solver_position_iteration_count=8,
+            solver_velocity_iteration_count=4,
+        ),
+        joint_drive=sim_utils.UrdfConverterCfg.JointDriveCfg(
+            gains=sim_utils.UrdfConverterCfg.JointDriveCfg.PDGainsCfg(stiffness=0, damping=0)
+        ),
+    ),
+    actuators={
+        "legs": _implicit_from_actuator(G1_29DOF_BeyondMimic.actuators["legs"]),
+        "feet": _implicit_from_actuator(G1_29DOF_BeyondMimic.actuators["feet"]),
+        "waist": _implicit_from_actuator(G1_29DOF_BeyondMimic.actuators["waist"]),
+        "waist_yaw": _implicit_from_actuator(G1_29DOF_BeyondMimic.actuators["waist_yaw"]),
+        "arms": G1_29DOF_BeyondMimic.actuators["arms"],
+    },
+)
+
+G1_REF_PARITY_ACTION_SCALE = {}
+for _actuator_cfg in G1_REF_PARITY_CFG.actuators.values():
+    _e = _actuator_cfg.effort_limit_sim
+    _s = _actuator_cfg.stiffness
+    _names = _actuator_cfg.joint_names_expr
+    if not isinstance(_e, dict):
+        _e = dict.fromkeys(_names, _e)
+    if not isinstance(_s, dict):
+        _s = dict.fromkeys(_names, _s)
+    for _n in _names:
+        if _n in _e and _n in _s and _s[_n]:
+            G1_REF_PARITY_ACTION_SCALE[_n] = 0.25 * _e[_n] / _s[_n]
 
 
 # =============================================================================
