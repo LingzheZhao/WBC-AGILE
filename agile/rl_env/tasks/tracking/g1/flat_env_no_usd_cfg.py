@@ -14,3 +14,5 @@ class G1FlatNoUsdEnvCfg(G1FlatEnvCfg):
     def __post_init__(self):
         super().__post_init__()
         self.scene.robot = G1_29DOF_NO_USD.replace(prim_path="{ENV_REGEX_NS}/Robot")
+        self.commands.motion.motion_body_names = None
+        self.commands.motion.motion_joint_names = None
