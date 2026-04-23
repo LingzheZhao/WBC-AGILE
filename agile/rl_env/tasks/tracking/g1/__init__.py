@@ -41,3 +41,13 @@ gym.register(
         "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_ref_parity_cfg:G1FlatRefParityPPORunnerCfg",
     },
 )
+
+gym.register(
+    id="Tracking-Flat-G1-NoUSD-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.flat_env_no_usd_cfg:G1FlatNoUsdEnvCfg",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:G1FlatPPORunnerCfg",
+    },
+)
